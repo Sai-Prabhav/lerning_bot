@@ -2,6 +2,10 @@
 
 import discord
 from discord.ext import commands
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -49,4 +53,4 @@ async def account_creation_date(ctx, member: discord.Member):
 async def get_message_id(ctx, message: discord.Message):
     await ctx.respond(f"Message ID: `{message.id}`")
 
-bot.run("token")
+bot.run(os.getenv("hi"))

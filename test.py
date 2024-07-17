@@ -1,8 +1,11 @@
 # This example requires the 'message_content' privileged intent to function.
 
 from discord.ext import commands
-
+import os
 import discord
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Bot(commands.Bot):
@@ -11,7 +14,7 @@ class Bot(commands.Bot):
         intents.message_content = True
 
         super().__init__(
-            command_prefix=commands.when_mentioned_or('$'),
+            command_prefix=commands.when_mentioned_or('.'),
             intents=intents)
 
     async def on_ready(self):
@@ -19,46 +22,129 @@ class Bot(commands.Bot):
         print('------')
 
 
-# Define a simple View that gives us a confirmation menu
 class Confirm(discord.ui.View):
-    def __init__(self):
+    def __init__(self, msg: discord.message):
         super().__init__()
-        self.value = None
+        self.message = msg
+        self.value = ""
+        self.msg = ""
+        self.result = 0
 
-    # When the confirm button is pressed, set the inner value to `True` and
-    # stop the View from listening to more input.
-    # We also send the user an ephemeral message that we're confirming their choice.
+    async def update_num(self, num: int, interaction: discord.Interaction):
+        await interaction.response.send_message('recorded', ephemeral=True)
+        self.value += str(num)
+        self.msg += str(num)
+        await self.message.edit(content=f"```{self.msg}```")
+
+    async def update_op(self, op: str, interaction: discord.Interaction):
+        await interaction.response.send_message('recorded', ephemeral=True)
+        self.value = ""
+        self.msg += op
+        await self.message.edit(content=self.msg)
+
     @discord.ui.button(label='1', style=discord.ButtonStyle.green)
     async def inp_1(self,
                     interaction: discord.Interaction,
                     button: discord.ui.Button):
-        await interaction.response.send_message('Confirming', ephemeral=True)
-        self.value += 1
+
+        await self.update_num(1, interaction)
 
     @discord.ui.button(label='2', style=discord.ButtonStyle.green)
     async def inp_2(self,
                     interaction: discord.Interaction,
                     button: discord.ui.Button):
 
-        await interaction.response.send_message('Confirming', ephemeral=True)
-        self.value += 2
+        await self.update_num(2, interaction)
 
-    @discord.ui.button(label='2', style=discord.ButtonStyle.green)
+    @discord.ui.button(label='3', style=discord.ButtonStyle.green)
     async def inp_3(self,
                     interaction: discord.Interaction,
                     button: discord.ui.Button):
-        await interaction.response.send_message('Confirming', ephemeral=True)
-        self.value += 3
 
-    # This one is similar to the confirmation button except sets the inner value to `False`
+        await self.update_num(3, interaction)
 
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
-    async def cancel(
+    @discord.ui.button(label='4', style=discord.ButtonStyle.green)
+    async def inp_4(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(4, interaction)
+
+    @discord.ui.button(label='5', style=discord.ButtonStyle.green)
+    async def inp_5(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(5, interaction)
+
+    @discord.ui.button(label='6', style=discord.ButtonStyle.green)
+    async def inp_6(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(6, interaction)
+
+    @discord.ui.button(label='7', style=discord.ButtonStyle.green)
+    async def inp_7(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(7, interaction)
+
+    @discord.ui.button(label='8', style=discord.ButtonStyle.green)
+    async def inp_8(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(8, interaction)
+
+    @discord.ui.button(label='9', style=discord.ButtonStyle.green)
+    async def inp_9(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(9, interaction)
+
+    @discord.ui.button(label='0', style=discord.ButtonStyle.green)
+    async def inp_0(self,
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button):
+
+        await self.update_num(0, interaction)
+
+    @discord.ui.button(label='+', style=discord.ButtonStyle.green)
+    async def add(
             self,
             interaction: discord.Interaction,
             button: discord.ui.Button):
-        await interaction.response.send_message('Cancelling', ephemeral=True)
-        self.value = False
+        self.result += int(self.value)
+        await self.update_op("+", interaction)
+
+    @discord.ui.button(label='-', style=discord.ButtonStyle.green)
+    async def subtract(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button):
+        self.result -= int(self.value)
+        await self.update_op("-", interaction)
+
+    @discord.ui.button(label='*', style=discord.ButtonStyle.green)
+    async def muliply(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button):
+        self.result *= int(self.value)
+        await self.update_op("*", interaction)
+
+    @discord.ui.button(label='sumbit', style=discord.ButtonStyle.grey)
+    async def submit(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button):
+        await interaction.response.send_message(
+            f'```{self.msg} = {self.result + int(self.value)}```',
+            ephemeral=True)
+        await self.message.edit(content=f'```{self.msg} = {self.result + int(self.value)}```')
         self.stop()
 
 
@@ -66,20 +152,20 @@ bot = Bot()
 
 
 @bot.command()
-async def ask(ctx: commands.Context):
+async def math(ctx: commands.Context):
     """Asks the user a question to confirm something."""
-    # We create the view and assign it to a variable so we can wait for it later.
-    view = Confirm()
-    await ctx.send('Do you want to continue?', view=view)
+    msg = await ctx.send("text")
+
+    view = Confirm(msg)
+    await ctx.send(" ", view=view)
     # Wait for the View to stop listening for input...
     await view.wait()
-    if view.value is None:
+    if view.value == "":
         print('Timed out...')
     elif view.value:
-        print('Confirmed...')
+        print(view.result)
     else:
         print('Cancelled...')
 
 
-bot.run(
-    "token")
+bot.run(os.getenv("hi"))
