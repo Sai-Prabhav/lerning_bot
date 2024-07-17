@@ -129,14 +129,14 @@ class Confirm(discord.ui.View):
         await self.update_op("-", interaction)
 
     @discord.ui.button(label='*', style=discord.ButtonStyle.green)
-    async def muliply(
+    async def multiply(
             self,
             interaction: discord.Interaction,
             button: discord.ui.Button):
         self.result *= int(self.value)
         await self.update_op("*", interaction)
 
-    @discord.ui.button(label='sumbit', style=discord.ButtonStyle.grey)
+    @discord.ui.button(label='submit', style=discord.ButtonStyle.grey)
     async def submit(
             self,
             interaction: discord.Interaction,
